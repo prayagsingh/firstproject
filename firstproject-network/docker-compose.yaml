@@ -1,0 +1,111 @@
+version: '2'
+
+networks:
+  default:
+
+services:
+  orderer.firstproject.com:
+    container_name: orderer.firstproject.com
+    extends:
+      file: peer-base.yaml
+      service: orderer-base
+    volumes:
+      - ./crypto-config/ordererOrganizations/firstproject.com/orderers/orderer.firstproject.com/msp:/var/hyperledger/orderer/msp
+      - ./artifacts/orderer.genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./crypto-config/ordererOrganizations/firstproject.com/orderers/orderer.firstproject.com/tls:/var/hyperledger/orderer/tls
+
+    ports:
+      - 7050:7050
+
+
+  ca.org1.firstapplication.com:
+    image: hyperledger/fabric-ca:1.4.1
+    container_name: ca.org1.firstproject.com
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.org1.firstproject.com
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.firstproject.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/78da3186373e52832b71dd83ec4d36ef84722a3e3ed15e8df214b482fe2723e7_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.firstproject.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/78da3186373e52832b71dd83ec4d36ef84722a3e3ed15e8df214b482fe2723e7_sk
+    ports:
+      - 7054:7054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.firstproject.com/ca/:/etc/hyperledger/fabric-ca-server-config
+
+
+  peer0.org1.firstproject.com:
+    container_name: peer0.org1.firstproject.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      
+      - CORE_PEER_NETWORKID=firstproject
+      - CORE_PEER_ID=peer0.org1.firstproject.com
+      - CORE_PEER_ADDRESSAUTODETECT=true
+      - CORE_PEER_ADDRESS=peer0.org1.firstproject.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.firstproject.com:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_TLS_SERVERHOSTOVERRIDE=peer0.org1.firstproject.com
+      #- CORE_PEER_CHAINCODELISTENADDRESS=peer0.org1.firstproject.com:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.firstproject.com:7051
+      
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./crypto-config/peerOrganizations/org1.firstproject.com/peers/peer0.org1.firstproject.com/msp:/var/hyperledger/msp
+        - ./crypto-config/peerOrganizations/org1.firstproject.com/peers/peer0.org1.firstproject.com/tls:/var/hyperledger/tls
+  
+    ports:
+      - 7051:7051
+      #- 7052:7052
+      - 7053:7053
+      
+    depends_on:
+      - orderer.firstproject.com
+    links:
+      - orderer.firstproject.com  
+    networks:
+      default:
+        aliases:
+          - peer0.org1.firstproject.com  
+
+
+  peer1.org1.firstproject.com:
+    container_name: peer1.org1.firstproject.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      
+      - CORE_PEER_NETWORKID=firstproject
+      - CORE_PEER_ID=peer1.org1.firstproject.com
+      - CORE_PEER_ADDRESSAUTODETECT=true
+      - CORE_PEER_ADDRESS=peer1.org1.firstproject.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.firstproject.com:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_TLS_SERVERHOSTOVERRIDE=peer1.org1.firstproject.com
+      #- CORE_PEER_CHAINCODELISTENADDRESS=peer1.org1.firstproject.com:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.firstproject.com:7051
+      
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./crypto-config/peerOrganizations/org1.firstproject.com/peers/peer1.org1.firstproject.com/msp:/var/hyperledger/msp
+        - ./crypto-config/peerOrganizations/org1.firstproject.com/peers/peer1.org1.firstproject.com/tls:/var/hyperledger/tls
+  
+    ports:
+      - 8051:7051
+      #- 8052:7052
+      - 8053:7053
+    depends_on:
+      - orderer.firstproject.com
+    links:
+      - orderer.firstproject.com  
+    networks:
+      default:
+        aliases:
+          - peer1.org1.firstproject.com  
+
+  
