@@ -1,5 +1,5 @@
 # firstproject
-Project based on HLF1.4 with WEB and REST Api's. This poroject is tested on Windows OS. To run it on Ubuntu, please make the appropiate changes like changing the Path in main.go file(ChannelConfig and ChaincodeGoPath)
+Project based on HLF1.4 with WEB and REST Api's. This poroject is tested on Windows OS. To run it on Ubuntu, please make the appropriate changes like changing the Path in main.go file(ChannelConfig and ChaincodeGoPath)
 
 ### Start the project
 1. go to $GOPATH/src/github.com/hyperledger/firstproject
